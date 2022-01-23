@@ -1,11 +1,10 @@
-# Use root/example as user/password credentials
 version: '3.1'
 
 services:
-
   team_management_db:
     image: mariadb
-    restart: always
+    restart: unless-stopped
+    command: --binlog-format=ROW --log-bin
     ports:
       - 3308:3306
     environment:
@@ -15,10 +14,13 @@ services:
       MARIADB_PASSWORD: dev
     volumes:
      - ${PWD}/data/mariadb_teams:/var/lib/mysql
+    networks:
+      - eda-local
 
   project_management_db:
     image: mariadb
-    restart: always
+    restart: unless-stopped
+    command: --binlog-format=ROW --log-bin
     ports:
       - 3309:3306
     environment:
@@ -28,9 +30,68 @@ services:
       MARIADB_PASSWORD: dev
     volumes:
      - ${PWD}/data/mariadb_project:/var/lib/mysql
+    networks:
+      - eda-local
 
-  adminer:
-    image: adminer
-    restart: always
+
+  nifi_docker:
+    image: apache/nifi:latest
+    container_name: nifi_docker
+    restart: unless-stopped
     ports:
-      - 8080:8080
+      # HTTP
+      - 8080:8080/tcp
+      # HTTPS
+      - 8443:8443/tcp
+      # Remote Input Socket
+      - 10000:10000/tcp
+      # JVM Debugger
+      - 8001:8001/tcp
+      # Cluster Node Protocol
+      #- 11443:11443/tcp
+    volumes:
+      # mkdir /var/lib/nifi && chown -R 1000:1000 /var/lib/nifi
+      # - ${PWD}/nifi/drivers:/opt/nifi/nifi-current/drivers
+      # - ${PWD}/nifi/conf:/opt/nifi/nifi-current/conf
+       - ${PWD}/nifi/tmp:/opt/nifi/nifi-current/tmp
+       - ${PWD}/nifi/conf:/opt/nifi/nifi-current/conf
+       - ${PWD}/nifi/database_repository:/opt/nifi/nifi-current/database_repository
+       - ${PWD}/nifi/flowfile_repository:/opt/nifi/nifi-current/flowfile_repository
+       - ${PWD}/nifi/content_repository:/opt/nifi/nifi-current/content_repository
+       - ${PWD}/nifi/provenance_repository:/opt/nifi/nifi-current/provenance_repository
+       - ${PWD}/nifi/state:/opt/nifi/nifi-current/state
+       - ${PWD}/nifi/logs:/opt/nifi/nifi-current/logs
+       - ${PWD}/nifi/drivers:/opt/nifi/nifi-current/drivers
+    environment:
+      
+      ########## JVM ##########
+      
+      # -Xms
+      #   The initial JVM heap size.
+      NIFI_JVM_HEAP_INIT: 512m
+
+      # -Xmx
+      #   The maximum JVM heap size.
+      NIFI_JVM_HEAP_MAX: 512m
+      
+      # -Xdebug
+      #   The JVM Debugger can be enabled by setting this environment variable to any value.
+      #NIFI_JVM_DEBUGGER: ''
+
+
+
+      ########## Web ##########
+
+      # nifi.web.http.host
+      NIFI_WEB_HTTP_HOST: '0.0.0.0'
+      
+      # nifi.web.http.port
+      #   HTTP Port
+      NIFI_WEB_HTTP_PORT: 8080
+    networks:
+      - eda-local
+
+networks:
+  eda-local:
+            
+   

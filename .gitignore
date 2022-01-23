@@ -1,2 +1,10 @@
 data/
 previous-project/node_modules
+nifi/tmp/*
+nifi/conf/archive
+nifi/database_repository/*
+nifi/flowfile_repository/*
+nifi/content_repository/*
+nifi/provenance_repository/*
+nifi/state/*
+nifi/logs/*
