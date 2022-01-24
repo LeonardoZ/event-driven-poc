@@ -80,7 +80,7 @@ users
     Leo
     Barbara
 teams
-    Eart
+    Earth
     Wind
 project
     Bus Project
