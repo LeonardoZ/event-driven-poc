@@ -8,3 +8,8 @@ nifi/content_repository/*
 nifi/provenance_repository/*
 nifi/state/*
 nifi/logs/*
+
+rabbitmq/rabbit_data/log/*
+rabbitmq/rabbit_data/data/*
+
+maxwell/

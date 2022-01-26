@@ -1,0 +1,39 @@
+{
+  "vhosts": {
+    "/": {
+      "connection": {
+        "url": "amqp://localhost:5672"
+      },
+      "exchanges": {
+        "tx_maxwell_teams_db": {
+          "assert": true,
+          "type": "topic"
+        }
+      },
+      "queues": {
+        "events_teams_q": {
+          "options": {
+            "durable": true,
+            "arguments": {
+              "x-single-active-consumer": true
+            }
+          }
+        }
+      },
+      "bindings": {
+        "b1": {
+          "source": "tx_maxwell_teams_db",
+          "destination": "events_teams_q",
+          "destinationType": "queue",
+          "bindingKey": "teams.*"
+        }
+      },
+      "subscriptions": {
+        "events_teams_subs": {
+          "queue": "events_teams_q",
+          "prefetch": 1
+        }
+      }
+    }
+  }
+}

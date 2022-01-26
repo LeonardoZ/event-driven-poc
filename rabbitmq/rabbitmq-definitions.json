@@ -1,0 +1,65 @@
+{
+    "users": [{
+      "name": "admin",
+      "password": "wololo",
+      "tags": "administrator"
+    }, {
+      "name": "consumer",
+      "password": "mululu",
+      "tags": ""
+    }, {
+      "name": "producer",
+      "password": "kululu",
+      "tags": ""
+      }],
+    "vhosts": [{
+      "name": "/"
+    }],
+    "permissions": [{
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }, {
+      "user": "consumer",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }, {
+      "user": "producer",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+      }],
+    "exchanges": [{
+      "name": "tx_maxwell_teams_db",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }],
+    "queues": [{
+      "name": "events_teams_q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-single-active-consumer": true
+      }
+    }],
+    "bindings": [{
+      "source": "tx_maxwell_teams_db",
+      "vhost": "/",
+      "destination": "events_teams_q",
+      "destination_type": "queue",
+      "routing_key": "teams.*",
+      "arguments": {}
+    }]
+  }
+  

@@ -1,18 +1,57 @@
 version: '3.1'
 
 services:
+ 
+  maxwell_teams:
+    image: zendesk/maxwell
+    restart: unless-stopped
+    container_name: maxwell
+    command: bin/maxwell --config /etc/maxwell/config.properties 
+    # --daemon
+    # --kafka.bootstrap.servers=kafka:9092 --kafka_topic=maxwell
+    # env_file:
+    volumes: 
+      - ./maxwell:/etc/maxwell/
+    environment:
+      - MAXWELL_PRODUCER=rabbitmq
+    depends_on:
+      - team_management_db
+      - rabbitmq
+    networks:
+     - eda-local
+
+  rabbitmq:
+    build: 
+      context: .
+      dockerfile: ${PWD}/rabbitmq/dockerfile
+    container_name: 'rabbitmq'
+    restart: unless-stopped
+    user: $DOCKER_USER
+    ports:
+     - 5672:5672
+     - 15672:15672
+    volumes:
+     - ${PWD}/rabbitmq/rabbit_data/data/:/var/lib/rabbitmq/mnesia
+     - ${PWD}/rabbitmq/rabbit_data/log/:/var/log/rabbitmq
+     - ${PWD}/rabbitmq/rabbitmq-definitions.json:/etc/rabbitmq/definitions.json:ro
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"
+    networks:
+     - eda-local
+
+
   team_management_db:
     image: mariadb
     restart: unless-stopped
-    command: --binlog-format=ROW --log-bin
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci', '--binlog-format=ROW', '--log-bin=team_mgmt_log', '--binlog-do-db=team_mgmt']
     ports:
-
       - 3308:3306
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: team_mgmt
       MARIADB_USER: dev
       MARIADB_PASSWORD: dev
+      LANG: C.UTF-8
     volumes:
      - ${PWD}/data/mariadb_teams:/var/lib/mysql
      - ${PWD}/mariadb/team.my.cnf:/etc/mysql/conf.d/team.my.cnf
@@ -23,6 +62,7 @@ services:
     image: mariadb
     restart: unless-stopped
     command: --binlog-format=ROW --log-bin
+    user: $DOCKER_USER
     ports:
       - 3309:3306
     environment:
@@ -43,14 +83,6 @@ services:
     ports:
       # HTTP
       - 8080:8080/tcp
-      # HTTPS
-      - 8443:8443/tcp
-      # Remote Input Socket
-      - 10000:10000/tcp
-      # JVM Debugger
-      - 8001:8001/tcp
-      # Cluster Node Protocol
-      #- 11443:11443/tcp
     volumes:
       # mkdir /var/lib/nifi && chown -R 1000:1000 /var/lib/nifi
       # - ${PWD}/nifi/drivers:/opt/nifi/nifi-current/drivers

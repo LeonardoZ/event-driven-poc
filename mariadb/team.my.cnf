@@ -1,5 +1,4 @@
 [client]
-max_allowed_packet              = 1G
 default-character-set           = utf8mb4
 
 [mysql]
