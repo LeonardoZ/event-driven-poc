@@ -7,6 +7,7 @@ create table users(
 
 create table teams(
     id int primary key auto_increment not null,
+    team_foreign_id int not null,
     description varchar(200) not null unique,
     active boolean not null default true
 );
@@ -32,4 +33,6 @@ create table project_teams_members(
     foreign key (project_id) references projects(id)
 );
 
-
+CREATE USER 'maxwell'@'%' IDENTIFIED BY '123456';
+GRANT ALL ON maxwell.* TO 'maxwell'@'%';
+GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';

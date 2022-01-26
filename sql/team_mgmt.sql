@@ -27,3 +27,6 @@ create table teams(
 
 alter table team_roles add unique (team_id, user_id)
 
+CREATE USER 'maxwell'@'%' IDENTIFIED BY '123456';
+GRANT ALL ON maxwell.* TO 'maxwell'@'%';
+GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';

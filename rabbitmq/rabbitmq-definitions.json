@@ -42,9 +42,26 @@
       "auto_delete": false,
       "internal": false,
       "arguments": {}
+    }, {
+      "name": "tx_maxwell_projects_db",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
     }],
     "queues": [{
       "name": "events_teams_q",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-single-active-consumer": true
+      }
+    }, {
+      "name": "events_project_teams_q",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -59,6 +76,13 @@
       "destination": "events_teams_q",
       "destination_type": "queue",
       "routing_key": "teams.*",
+      "arguments": {}
+    }, {
+      "source": "tx_maxwell_projects_db",
+      "vhost": "/",
+      "destination": "events_projects_q",
+      "destination_type": "queue",
+      "routing_key": "projects.*",
       "arguments": {}
     }]
   }

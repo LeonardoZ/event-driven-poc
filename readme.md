@@ -115,6 +115,8 @@ project_teams.activated -> get all team_members from system a and integrate into
 OK Setup RabbitMQ
 OK Criar projeto Orchestrador
 
-- Implantar Esttrutura consumers
+OK Implantar Estrutura consumers
+
+- Implantar tratativa de error
 - Implantar eventos System A
 - Implantar eventos System B

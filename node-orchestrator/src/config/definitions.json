@@ -2,10 +2,14 @@
   "vhosts": {
     "/": {
       "connection": {
-        "url": "amqp://localhost:5672"
+        "url": "amqp://consumer:mululu@localhost:5672"
       },
       "exchanges": {
         "tx_maxwell_teams_db": {
+          "assert": true,
+          "type": "topic"
+        },
+        "tx_maxwell_projects_db": {
           "assert": true,
           "type": "topic"
         }
@@ -15,7 +19,17 @@
           "options": {
             "durable": true,
             "arguments": {
-              "x-single-active-consumer": true
+              "x-single-active-consumer": true,
+              "x-message-ttl": 3600000
+            }
+          }
+        },
+        "events_project_teams_q": {
+          "options": {
+            "durable": true,
+            "arguments": {
+              "x-single-active-consumer": true,
+              "x-message-ttl": 3600000
             }
           }
         }
@@ -26,11 +40,21 @@
           "destination": "events_teams_q",
           "destinationType": "queue",
           "bindingKey": "teams.*"
+        },
+        "b2": {
+          "source": "tx_maxwell_projects_db",
+          "destination": "events_project_teams_q",
+          "destinationType": "queue",
+          "bindingKey": "project_teams.*"
         }
       },
       "subscriptions": {
         "events_teams_subs": {
           "queue": "events_teams_q",
+          "prefetch": 1
+        },
+        "events_project_teams_subs": {
+          "queue": "events_project_teams_q",
           "prefetch": 1
         }
       }

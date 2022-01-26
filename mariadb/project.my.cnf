@@ -1,0 +1,28 @@
+[client]
+default-character-set           = utf8mb4
+
+[mysql]
+no_auto_rehash
+max_allowed_packet              = 1G
+prompt                          = '\u@\h [\d]> '
+default_character_set           = utf8mb4
+
+[mysqldump]
+quote-names
+max_allowed_packet              = 1G
+
+[mysqld_safe]
+max_allowed_packet              = 1G
+
+[mysqld]
+skip-external-locking
+skip_name_resolve
+default_storage_engine          = InnoDB
+init-connect                    = "SET NAMES utf8mb4"
+character_set_server            = utf8mb4
+collation_server                = utf8_unicode_ci
+character-set-client-handshake  = FALSE
+character-set-server            = "utf8mb4"
+collation-server                = "utf8mb4_unicode_ci"
+autocommit                      = 1
+max_allowed_packet              = 1G

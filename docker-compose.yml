@@ -5,17 +5,29 @@ services:
   maxwell_teams:
     image: zendesk/maxwell
     restart: unless-stopped
-    container_name: maxwell
+    container_name: maxwell_teams
     command: bin/maxwell --config /etc/maxwell/config.properties 
-    # --daemon
-    # --kafka.bootstrap.servers=kafka:9092 --kafka_topic=maxwell
-    # env_file:
     volumes: 
-      - ./maxwell:/etc/maxwell/
+      - ./maxwell/teams:/etc/maxwell
     environment:
       - MAXWELL_PRODUCER=rabbitmq
     depends_on:
       - team_management_db
+      - rabbitmq
+    networks:
+     - eda-local
+  
+  maxwell_project:
+    image: zendesk/maxwell
+    restart: unless-stopped
+    container_name: maxwell_projects
+    command: bin/maxwell --config /etc/maxwell/config.properties 
+    volumes: 
+      - ./maxwell/project:/etc/maxwell
+    environment:
+      - MAXWELL_PRODUCER=rabbitmq
+    depends_on:
+      - project_management_db
       - rabbitmq
     networks:
      - eda-local
@@ -51,7 +63,6 @@ services:
       MARIADB_DATABASE: team_mgmt
       MARIADB_USER: dev
       MARIADB_PASSWORD: dev
-      LANG: C.UTF-8
     volumes:
      - ${PWD}/data/mariadb_teams:/var/lib/mysql
      - ${PWD}/mariadb/team.my.cnf:/etc/mysql/conf.d/team.my.cnf
@@ -61,7 +72,7 @@ services:
   project_management_db:
     image: mariadb
     restart: unless-stopped
-    command: --binlog-format=ROW --log-bin
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci', '--binlog-format=ROW', '--log-bin=project_mgmt_log', '--binlog-do-db=project_mgmt']
     user: $DOCKER_USER
     ports:
       - 3309:3306
@@ -72,6 +83,7 @@ services:
       MARIADB_PASSWORD: dev
     volumes:
      - ${PWD}/data/mariadb_project:/var/lib/mysql
+     - ${PWD}/mariadb/project.my.cnf:/etc/mysql/conf.d/project.my.cnf
     networks:
       - eda-local
 
