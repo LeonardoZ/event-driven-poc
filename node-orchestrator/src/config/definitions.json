@@ -12,6 +12,10 @@
         "tx_maxwell_projects_db": {
           "assert": true,
           "type": "topic"
+        },
+        "dlx": {
+          "assert": true,
+          "type": "direct"
         }
       },
       "queues": {
@@ -20,7 +24,9 @@
             "durable": true,
             "arguments": {
               "x-single-active-consumer": true,
-              "x-message-ttl": 3600000
+              "x-message-ttl": 3600000,
+              "x-dead-letter-exchange": "dlx",
+              "x-dead-letter-routing-key": "events_teams_q"
             }
           }
         },
@@ -29,7 +35,31 @@
             "durable": true,
             "arguments": {
               "x-single-active-consumer": true,
-              "x-message-ttl": 3600000
+              "x-message-ttl": 3600000,
+              "x-dead-letter-exchange": "dlx",
+              "x-dead-letter-routing-key": "events_project_teams_q"
+            }
+          }
+        },
+        "events_project_teams_dlq": {
+          "options": {
+            "name": "events_project_teams_dlq",
+            "durable": true,
+            "autoDelete": false,
+            "arguments": {
+              "x-message-ttl": 36000000,
+              "x-single-active-consumer": true
+            }
+          }
+        },
+        "events_teams_dlq": {
+          "options": {
+            "name": "events_teams_dlq",
+            "durable": true,
+            "autoDelete": false,
+            "arguments": {
+              "x-message-ttl": 36000000,
+              "x-single-active-consumer": true
             }
           }
         }
@@ -46,6 +76,18 @@
           "destination": "events_project_teams_q",
           "destinationType": "queue",
           "bindingKey": "project_teams.*"
+        },
+        "b1_dlq": {
+          "source": "dlx",
+          "destination": "events_teams_dlq",
+          "destinationType": "queue",
+          "bindingKey": "events_teams_q"
+        },
+        "b2_dlq": {
+          "source": "dlx",
+          "destination": "events_project_teams_dlq",
+          "destinationType": "queue",
+          "bindingKey": "events_project_teams_q"
         }
       },
       "subscriptions": {

@@ -11,6 +11,12 @@ async function insert(event) {
     if (!team) {
       throw new Error('Team not found');
     }
+    const dstTeam = await projectMgmtTeamsRepository.getTeamByForeignId(
+      event.data.id
+    );
+    if (dstTeam) {
+      throw new Error('Entity already exists on destiny system');
+    }
     await projectMgmtTeamsRepository.insert({
       team_foreign_id: team.id,
       description: team.description,
@@ -49,11 +55,6 @@ async function update(event) {
 }
 async function deleteEvent(event) {
   try {
-    // get from origin
-    const team = await teamsMgmtTeamsRepository.getTeamById(event.data.id);
-    if (!team) {
-      throw new Error('Team not found');
-    }
     const dstTeam = await projectMgmtTeamsRepository.getTeamByForeignId(
       event.data.id
     );
@@ -83,8 +84,17 @@ async function factory(event) {
       case 'insert':
         await insert(event);
         break;
+      case 'bootstrap-insert':
+        await insert(event);
+        break;
       case 'update':
         await update(event);
+        break;
+      case 'bootstrap-update':
+        await update(event);
+        break;
+      case 'bootstrap-delete':
+        await deleteEvent(event);
         break;
       case 'delete':
         await deleteEvent(event);

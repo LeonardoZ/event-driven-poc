@@ -11,6 +11,9 @@ module.exports = {
     return projectDb('teams').delete().where({ id });
   },
   getTeamByForeignId(id) {
-    return teamsDb('teams').select('*').where({ team_foreign_id: id }).first();
+    return projectDb('teams')
+      .select('*')
+      .where({ team_foreign_id: id })
+      .first();
   },
 };

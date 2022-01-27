@@ -1,40 +1,51 @@
 {
-    "users": [{
+  "users": [
+    {
       "name": "admin",
       "password": "wololo",
       "tags": "administrator"
-    }, {
+    },
+    {
       "name": "consumer",
       "password": "mululu",
       "tags": ""
-    }, {
+    },
+    {
       "name": "producer",
       "password": "kululu",
       "tags": ""
-      }],
-    "vhosts": [{
+    }
+  ],
+  "vhosts": [
+    {
       "name": "/"
-    }],
-    "permissions": [{
+    }
+  ],
+  "permissions": [
+    {
       "user": "admin",
       "vhost": "/",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
-    }, {
+    },
+    {
       "user": "consumer",
       "vhost": "/",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
-    }, {
+    },
+    {
       "user": "producer",
       "vhost": "/",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
-      }],
-    "exchanges": [{
+    }
+  ],
+  "exchanges": [
+    {
       "name": "tx_maxwell_teams_db",
       "vhost": "/",
       "type": "topic",
@@ -42,7 +53,8 @@
       "auto_delete": false,
       "internal": false,
       "arguments": {}
-    }, {
+    },
+    {
       "name": "tx_maxwell_projects_db",
       "vhost": "/",
       "type": "topic",
@@ -50,40 +62,95 @@
       "auto_delete": false,
       "internal": false,
       "arguments": {}
-    }],
-    "queues": [{
+    },
+    {
+      "name": "dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
       "name": "events_teams_q",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {
         "x-message-ttl": 3600000,
+        "x-single-active-consumer": true,
+        "x-dead-letter-exchange": "dlx",
+        "x-dead-letter-routing-key": "events_teams_q"
+      }
+    },
+    {
+      "name": "events_teams_dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 36000000,
         "x-single-active-consumer": true
       }
-    }, {
+    },
+    {
       "name": "events_project_teams_q",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
       "arguments": {
         "x-message-ttl": 3600000,
+        "x-single-active-consumer": true,
+        "x-dead-letter-exchange": "dlx",
+        "x-dead-letter-routing-key": "events_project_teams_q"
+      }
+    },
+    {
+      "name": "events_project_teams_dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 36000000,
         "x-single-active-consumer": true
       }
-    }],
-    "bindings": [{
+    }
+  ],
+  "bindings": [
+    {
       "source": "tx_maxwell_teams_db",
       "vhost": "/",
       "destination": "events_teams_q",
       "destination_type": "queue",
       "routing_key": "teams.*",
       "arguments": {}
-    }, {
+    },
+    {
       "source": "tx_maxwell_projects_db",
       "vhost": "/",
       "destination": "events_projects_q",
       "destination_type": "queue",
       "routing_key": "projects.*",
       "arguments": {}
-    }]
-  }
-  
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "events_teams_dlq",
+      "destination_type": "queue",
+      "routing_key": "events_teams_q",
+      "arguments": {}
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "events_project_teams_dlq",
+      "destination_type": "queue",
+      "routing_key": "events_project_teams_q",
+      "arguments": {}
+    }
+  ]
+}

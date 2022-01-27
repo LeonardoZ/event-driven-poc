@@ -35,18 +35,29 @@ async function init() {
       try {
         console.log(`Content is ${content}`);
         await handler(JSON.parse(content));
-        console.log('handled1');
         ackOrNack();
         //subscription.cancel();
       } catch (error) {
-        // if (error.recoberable) {
         console.log(error);
-        ackOrNack(error, { strategy: 'nack', defer: 2000, requeue: true });
-        // }
+        if (error.code && error.code === 'ECONNREFUSED') {
+          console.log('REFUSED');
+          ackOrNack(error, { strategy: 'nack', defer: 2000, requeue: true });
+          // retry
+        } else {
+          console.log('REPUBLISH');
+          // republish attempt
+          ackOrNack(error, [
+            { strategy: 'republish', defer: 5000, attempts: 6 },
+            { strategy: 'nack' },
+          ]);
+        }
       }
     });
-    console.log('I1m here');
+    const t = require('../repository/teams_mgmt.teams');
+    const team = await t.getTeamById(1);
   } catch (error) {
+    console.log(error);
+    console.log(typeof error);
     throw error;
   }
 }
