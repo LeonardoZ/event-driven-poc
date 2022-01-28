@@ -9,7 +9,5 @@ nifi/provenance_repository/*
 nifi/state/*
 nifi/logs/*
 
-rabbitmq/rabbit_data/log/*
-rabbitmq/rabbit_data/data/*
-
-maxwell/
+rabbitmq/rabbitmq_data/log/*
+rabbitmq/rabbitmq_data/data/*

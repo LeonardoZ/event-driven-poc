@@ -1,8 +1,8 @@
-const teamsConsumer = require('./worker/teams.consumer');
+const consumer = require('./worker/consumer');
 
 async function init() {
   try {
-    await teamsConsumer.init();
+    await consumer.init();
   } catch (error) {
     console.log(error);
   }

@@ -20,17 +20,21 @@ create table projects(
 
 create table project_teams(
     id int primary key auto_increment not null,
+    project_id int not null,
     team_id int not null,
     active boolean not null default true,
-    foreign key (team_id) references teams(id)
+    foreign key (team_id) references teams(id),
+    foreign key (project_id) references projects(id)
 );
 
 create table project_teams_members(
     id int primary key auto_increment not null,
     project_id int not null,
+    team_id int not null,
     member_name varchar(255) not null,
     role varchar(15) not null,
-    foreign key (project_id) references projects(id)
+    foreign key (project_id) references projects(id),
+    foreign key (team_id) references teams(id)
 );
 
 CREATE USER 'maxwell'@'%' IDENTIFIED BY '123456';

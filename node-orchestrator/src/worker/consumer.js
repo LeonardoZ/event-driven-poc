@@ -1,10 +1,24 @@
 const Broker = require('rascal').BrokerAsPromised;
+let broker = null;
 const config = require('../config/definitions.json');
-const handler = require('./teams.handler');
+const teamsHandler = require('./teams.handler');
+const projectTeamHandler = require('./project_teams.handler');
+const subs = [
+  {
+    sub: 'events_teams_subs',
+    binding: 'b1',
+    handler: teamsHandler,
+  },
+  {
+    sub: 'events_project_teams_subs',
+    binding: 'b2',
+    handler: projectTeamHandler,
+  },
+];
 
 async function init() {
   try {
-    const broker = await Broker.create(config);
+    broker = await Broker.create(config);
     // TODO
     broker.on('error', console.error);
     broker.on('blocked', (reason, { vhost, connectionUrl }) => {
@@ -18,7 +32,24 @@ async function init() {
       );
     });
 
-    const subscription = await broker.subscribe('events_teams_subs', 'b1');
+    enableSubscription(broker);
+  } catch (error) {
+    console.log(error);
+    console.log(typeof error);
+    throw error;
+  }
+}
+
+function enableSubscription(broker) {
+  for (const sub of subs) {
+    configSubscription(broker, sub.sub, sub.binding, sub.handler);
+    console.log(sub);
+  }
+}
+
+async function configSubscription(broker, sub, binding, handler) {
+  try {
+    const subscription = await broker.subscribe(sub, binding);
     // TODO Redeliveries
     subscription.on('redeliveries_exceeded', (err, message, ackOrNack) => {
       console.error('Redeliveries exceeded', err);
@@ -33,10 +64,9 @@ async function init() {
 
     subscription.on('message', async (message, content, ackOrNack) => {
       try {
-        console.log(`Content is ${content}`);
+        console.log(`Content 2 is ${content}`);
         await handler(JSON.parse(content));
         ackOrNack();
-        //subscription.cancel();
       } catch (error) {
         console.log(error);
         if (error.code && error.code === 'ECONNREFUSED') {
@@ -53,37 +83,41 @@ async function init() {
         }
       }
     });
-    const t = require('../repository/teams_mgmt.teams');
-    const team = await t.getTeamById(1);
   } catch (error) {
-    console.log(error);
-    console.log(typeof error);
     throw error;
   }
 }
 
 process
   .on('SIGINT', function () {
-    broker.shutdown(function () {
-      process.exit();
-    });
+    if (broker) {
+      broker.shutdown(function () {
+        process.exit();
+      });
+    }
   })
   .on('SIGTERM', () => {
-    broker.shutdown(function () {
-      process.exit();
-    });
+    if (broker) {
+      broker.shutdown(function () {
+        process.exit();
+      });
+    }
   })
   .on('unhandledRejection', (reason, p) => {
     console.error(reason, 'Unhandled Rejection at Promise', p);
-    broker.shutdown(function () {
-      process.exit(-1);
-    });
+    if (broker) {
+      broker.shutdown(function () {
+        process.exit(-1);
+      });
+    }
   })
   .on('uncaughtException', (err) => {
     console.error(err, 'Uncaught Exception thrown');
-    broker.shutdown(function () {
-      process.exit(-2);
-    });
+    if (broker) {
+      broker.shutdown(function () {
+        process.exit(-2);
+      });
+    }
   });
 
 module.exports = { init };
