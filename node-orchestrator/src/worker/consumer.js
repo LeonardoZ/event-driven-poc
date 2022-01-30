@@ -35,7 +35,6 @@ async function init() {
     enableSubscription(broker);
   } catch (error) {
     console.log(error);
-    console.log(typeof error);
     throw error;
   }
 }
@@ -43,7 +42,6 @@ async function init() {
 function enableSubscription(broker) {
   for (const sub of subs) {
     configSubscription(broker, sub.sub, sub.binding, sub.handler);
-    console.log(sub);
   }
 }
 
@@ -64,17 +62,13 @@ async function configSubscription(broker, sub, binding, handler) {
 
     subscription.on('message', async (message, content, ackOrNack) => {
       try {
-        console.log(`Content 2 is ${content}`);
         await handler(JSON.parse(content));
         ackOrNack();
       } catch (error) {
-        console.log(error);
         if (error.code && error.code === 'ECONNREFUSED') {
-          console.log('REFUSED');
           ackOrNack(error, { strategy: 'nack', defer: 2000, requeue: true });
           // retry
         } else {
-          console.log('REPUBLISH');
           // republish attempt
           ackOrNack(error, [
             { strategy: 'republish', defer: 5000, attempts: 6 },

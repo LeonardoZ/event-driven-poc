@@ -134,7 +134,6 @@ async function factory(event) {
   try {
     const table = event.table;
     const type = event.type;
-    console.log(event);
     if (table !== 'project_teams') {
       throw new Error('table not recognized');
     }
